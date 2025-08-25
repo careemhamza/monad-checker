@@ -3,28 +3,254 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Monad Allowlist Checker</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Montanks WL Checker</title>
+  <meta name="description" content="Check if your EVM address is on the Montanks allowlist." />
+  <meta property="og:title" content="Montanks WL Checker" />
+  <meta property="og:description" content="Check if your EVM address is on the Montanks allowlist." />
+  <meta name="theme-color" content="#6b2bff" />
+  <style>
+    :root{
+      --bg:#5a17d4;
+      --bg2:#3c1db8;
+      --card:#4c52ff22;
+      --card-strong:#0d0f2a;
+      --text:#fff;
+      --muted:#d9d6ffcc;
+      --ok:#2ecc71;
+      --bad:#ff5c7a;
+      --accent:#7cf;
+      --accent2:#2ff5e8;
+      --shadow:0 24px 60px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #8137ff55, transparent 60%),
+        radial-gradient(1000px 500px at 100% 10%, #00ffe255, transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      min-height:100%;
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 48px auto 96px;
+      padding: 0 20px;
+    }
+    .title{
+      margin: 0 0 8px;
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-align:center;
+      text-transform: uppercase;
+    }
+    .subtitle{
+      text-align:center;
+      opacity:.9;
+      margin: 6px 0 28px;
+      font-size: clamp(14px, 2.2vw, 18px);
+    }
+    .checker{
+      background: linear-gradient(135deg, #7bb6ff33, #65ffe633);
+      border: 2px solid #ffffff33;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      border-radius: var(--radius);
+    }
+    .row{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      background: linear-gradient(180deg, #0a0e28, #0e1236);
+      border:1px solid #ffffff26;
+      border-radius: 16px;
+      padding: 14px;
+    }
+    input{
+      flex:1;
+      background:#0b0f2b;
+      border: 1px solid #ffffff1f;
+      color: var(--text);
+      padding: 18px 20px;
+      border-radius: 12px;
+      font-size: 18px;
+      outline: none;
+      box-shadow: inset 0 0 0 2px transparent;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    input:focus{ box-shadow: inset 0 0 0 2px #7cf8; border-color:#7cf }
+    button{
+      background: linear-gradient(135deg, #7cf, #2ff5e8);
+      color:#081020;
+      border:none;
+      font-weight:800;
+      letter-spacing:.3px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size:16px;
+      cursor:pointer;
+      transition: transform .05s ease;
+      min-width:130px;
+    }
+    button:active{ transform: translateY(1px) }
+    .hint{
+      text-align:center;
+      color:var(--muted);
+      margin: 10px 0 0;
+      font-size:14px;
+    }
+    .result{
+      margin-top: 26px;
+      padding: 18px 20px;
+      border-radius: 14px;
+      font-weight:600;
+      display:none;
+      border:1px solid #ffffff22;
+      background:#0d1131;
+    }
+    .result.ok{
+      display:block;
+      border-color:#21e4a844;
+      background: linear-gradient(0deg,#0f1f17,#0b2516);
+      color:#d7ffe7;
+    }
+    .result.bad{
+      display:block;
+      border-color:#ff6b8744;
+      background: linear-gradient(0deg,#1e0f17,#250b11);
+      color:#ffe1e7;
+    }
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    .badge .dot{
+      width:12px;height:12px;border-radius:50%;
+      background:currentColor;display:inline-block;
+      box-shadow: 0 0 0 3px #ffffff22 inset;
+    }
+    .credit{
+      margin-top:26px;
+      text-align:center;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .credit .avatar{
+      width:64px;height:64px;border-radius:50%;
+      display:block;margin:0 auto 10px;border:2px solid #ffffff33;
+      background:#ffffff22 object-fit:cover;
+    }
+    .credit a{ color:#fff; text-decoration:none; font-weight:700 }
+    .mini{
+      margin-top:6px;
+      font-size:12px;
+      opacity:.9;
+    }
+    footer{
+      margin-top:64px;
+      text-align:center;
+      color:#ffffffaa;
+      font-size:12px;
+    }
+  </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1 class="title">LIMITED MONAD CARD</h1>
+  <div class="wrap">
+    <h1 class="title">Montanks WL Checker</h1>
     <p class="subtitle">Check if your EVM address is eligible.</p>
 
-    <div class="card">
-      <input id="addressInput" type="text" placeholder="Paste your EVM address (0x...)" />
-      <button id="checkBtn">CHECK</button>
-    </div>
+    <section class="checker">
+      <div class="row">
+        <input id="addr" spellcheck="false" placeholder="Enter your EVM address (0x...)" />
+        <button id="checkBtn">CHECK</button>
+      </div>
+      <p class="hint">We never store your address. Checking locally against a bundled allowlist file.</p>
 
-    <p class="hint">We never store your address. It’s checked locally against an allowlist file.</p>
+      <div id="res" class="result"></div>
 
-    <div id="result" class="result"></div>
-  </main>
+      <div class="credit">
+        <img src="profile.png" alt="Kareemo" class="avatar">
+        <p>Built with ❤️ by <a href="https://x.com/0xKareemo" target="_blank">@0xKareemo</a></p>
+        <div class="mini">If your address is on the allowlist, you’ll see a green badge below.</div>
+      </div>
+    </section>
 
-  <footer class="footer">
-    <a href="https://twitter.com" target="_blank" rel="noreferrer">Follow</a>
-  </footer>
+    <footer>© <span id="y"></span> Montanks</footer>
+  </div>
 
-  <script src="script.js"></script>
+  <script>
+    // ---------- helpers ----------
+    const isHex = s => /^[0-9a-fA-F]+$/.test(s);
+    function normalizeAddress(a){
+      if(!a) return "";
+      a = a.trim();
+      // accept raw, with spaces/newlines, mixed case
+      if(a.startsWith("0x") && a.length === 42 && isHex(a.slice(2))) return a.toLowerCase();
+      return "";
+    }
+
+    // ---------- load allowlist ----------
+    let allow = null;
+    async function loadAllowlist(){
+      if(allow) return allow;
+      const resp = await fetch("wallets.txt?cache=" + Date.now());
+      if(!resp.ok) throw new Error("Allowlist file not found (wallets.txt)");
+      const text = await resp.text();
+
+      const set = new Set();
+      text.split(/[\r\n,;\t ]+/).forEach(item=>{
+        const a = normalizeAddress(item);
+        if(a) set.add(a);
+      });
+      allow = set;
+      return set;
+    }
+
+    // ---------- UI ----------
+    const $ = sel => document.querySelector(sel);
+    const addrEl = $("#addr");
+    const resEl = $("#res");
+    const btn = $("#checkBtn");
+    $("#y").textContent = new Date().getFullYear();
+
+    async function check(){
+      resEl.className = "result";
+      resEl.style.display = "block";
+      resEl.textContent = "Checking…";
+
+      try{
+        const set = await loadAllowlist();
+        const addr = normalizeAddress(addrEl.value);
+        if(!addr){
+          resEl.classList.add("bad");
+          resEl.innerHTML = `<span class="badge"><span class="dot" style="color:var(--bad)"></span> Invalid address. Please enter a valid EVM address (0x…)</span>`;
+          return;
+        }
+        if(set.has(addr)){
+          resEl.classList.add("ok");
+          resEl.innerHTML = `<span class="badge"><span class="dot" style="color:var(--ok)"></span> Eligible! Your address is on the allowlist.</span>`;
+        }else{
+          resEl.classList.add("bad");
+          resEl.innerHTML = `<span class="badge"><span class="dot" style="color:var(--bad)"></span> Not on the allowlist.</span>`;
+        }
+      }catch(err){
+        resEl.classList.add("bad");
+        resEl.textContent = "Error: " + err.message;
+      }
+    }
+
+    btn.addEventListener("click", check);
+    addrEl.addEventListener("keydown", e=>{
+      if(e.key==="Enter") check();
+    });
+
+    // Autofill from URL ?a=0x...
+    const u = new URL(location.href);
+    const q = u.searchParams.get("a");
+    if(q){ addrEl.value = q; check(); }
+  </script>
 </body>
 </html>
