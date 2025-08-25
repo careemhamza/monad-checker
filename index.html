@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Monad Allowlist Checker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1 class="title">LIMITED MONAD CARD</h1>
+    <p class="subtitle">Check if your EVM address is eligible.</p>
+
+    <div class="card">
+      <input id="addressInput" type="text" placeholder="Paste your EVM address (0x...)" />
+      <button id="checkBtn">CHECK</button>
+    </div>
+
+    <p class="hint">We never store your address. It’s checked locally against an allowlist file.</p>
+
+    <div id="result" class="result"></div>
+  </main>
+
+  <footer class="footer">
+    <a href="https://twitter.com" target="_blank" rel="noreferrer">Follow</a>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
